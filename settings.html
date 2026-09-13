@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KeyLayerHUD Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/styles/cyber.css" />
+    <link rel="stylesheet" href="/src/styles/settings.css" />
+    <script type="module" src="/src/settings.ts"></script>
+  </head>
+  <body class="settings-body">
+    <header>
+      <h1>KeyLayerHUD 設定</h1>
+      <span class="mono muted">v0.1.0</span>
+      <span class="spacer"></span>
+      <span class="hdr-group">
+        <span class="lbl">文字</span>
+        <button class="hdr-btn" id="font-minus" type="button">−</button>
+        <button class="hdr-btn" id="font-plus" type="button">＋</button>
+      </span>
+      <button class="hdr-btn" id="theme-toggle" type="button" title="ライト／ダーク">🌙</button>
+    </header>
+    <div id="sidebar-balloon" title="メニューを開く">💬 メニュー</div>
+    <div id="layout">
+      <nav id="sidebar">
+        <h3>設定</h3>
+        <button class="side-link active" data-panel="connection" type="button">🔌 接続</button>
+        <button class="side-link" data-panel="layout" type="button">⌨ レイアウト</button>
+        <button class="side-link" data-panel="keymap" type="button">🗂 キーマップ</button>
+        <button class="side-link" data-panel="hud" type="button">🪟 HUD</button>
+        <button class="side-link" data-panel="exit" type="button">⏻ 終了</button>
+      </nav>
+      <div id="sidebar-resizer"><button id="collapse-btn" type="button" title="折りたたみ">▼</button></div>
+      <main>
+        <div class="banner">Corne 42 相当のサンプルレイアウトを使用しています。実機到着後に VIA dump / ファーム小片を接続してください。</div>
+        <section class="panel active" id="panel-connection"></section>
+        <section class="panel" id="panel-layout"></section>
+        <section class="panel" id="panel-keymap"></section>
+        <section class="panel" id="panel-hud"></section>
+        <section class="panel" id="panel-exit"></section>
+      </main>
+    </div>
+  </body>
+</html>

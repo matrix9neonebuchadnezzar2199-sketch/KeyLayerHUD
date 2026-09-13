@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "KeyLayerHUD",
+  "version": "0.1.0",
+  "identifier": "com.keylayer.hud",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420/hud.html",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "hud",
+        "title": "KeyLayerHUD",
+        "url": "hud.html",
+        "width": 760,
+        "height": 300,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "resizable": true,
+        "skipTaskbar": true,
+        "visible": true
+      },
+      {
+        "label": "settings",
+        "title": "KeyLayerHUD Settings",
+        "url": "settings.html",
+        "width": 980,
+        "height": 720,
+        "minWidth": 720,
+        "minHeight": 520,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

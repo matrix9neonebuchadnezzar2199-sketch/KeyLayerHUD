@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeyLayerHUD — 設定 モック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e27; --surface: rgba(30,41,59,.6); --surface-solid: #1e293b; --surface2: rgba(10,14,39,.6);
+    --border: rgba(100,116,139,.3); --border-light: rgba(100,116,139,.18);
+    --text: #f1f5f9; --text-muted: #94a3b8; --link: #00d4ff; --purple: #8b5cf6;
+    --btn: #0ea5c6; --btn-text: #06121f; --btn-save: #10b981; --btn-stop: #ff0055; --btn-warn: #e3892b;
+    --code-bg: rgba(10,14,39,.7); --grid-line: rgba(0,212,255,.05); --glow: 0 0 20px rgba(0,212,255,.3);
+    --shadow-card: 0 8px 32px rgba(0,0,0,.4); color-scheme: dark;
+  }
+  :root.light {
+    --bg: #eef2f7; --surface: rgba(255,255,255,.72); --surface-solid: #fff; --surface2: rgba(226,232,240,.7);
+    --border: rgba(100,116,139,.35); --text: #0f172a; --text-muted: #5a6472; --link: #0284c7;
+    --btn: #38bdf8; --btn-text: #082f3f; --code-bg: #eef1f4; --grid-line: rgba(2,132,199,.06);
+    --glow: 0 0 16px rgba(2,132,199,.25); --shadow-card: 0 8px 24px rgba(15,23,42,.12); color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 14px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, "Yu Gothic UI", Meiryo, sans-serif; min-height: 100vh; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 50px 50px; }
+  code, .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+
+  header { background: rgba(10,14,39,.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,212,255,.2);
+    padding: 10px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  :root.light header { background: rgba(255,255,255,.85); }
+  header h1 { font-size: 1.25rem; margin: 0; font-weight: 800;
+    background: linear-gradient(135deg, var(--link), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  header .spacer { flex: 1; }
+  .hdr-btn { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 8px;
+    min-width: 34px; height: 30px; cursor: pointer; font-size: 1rem; }
+  .hdr-btn:hover { border-color: var(--link); box-shadow: var(--glow); }
+  .hdr-group { display: flex; gap: 4px; align-items: center; }
+  .hdr-group .lbl { color: var(--text-muted); font-size: 0.85rem; }
+
+  #layout { display: flex; position: relative; z-index: 1; }
+  #sidebar { background: var(--surface); backdrop-filter: blur(12px); border-right: 1px solid var(--border);
+    width: 240px; min-width: 160px; max-width: 420px; height: calc(100vh - 51px); position: sticky; top: 51px;
+    overflow-y: auto; flex-shrink: 0; padding: 14px 12px; }
+  #sidebar h3 { font-size: 0.75rem; color: var(--text-muted); margin: 14px 4px 6px; text-transform: uppercase; letter-spacing: 0.12em; }
+  #sidebar h3:first-child { margin-top: 0; }
+  .side-link { display: block; padding: 8px 12px; border-radius: 8px; color: var(--text); text-decoration: none;
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+  .side-link:hover { background: rgba(0,212,255,.08); color: var(--link); }
+  .side-link.active { color: var(--link); background: rgba(0,212,255,.12); box-shadow: var(--glow); }
+  #sidebar-resizer { width: 6px; cursor: col-resize; flex-shrink: 0; height: calc(100vh - 51px); position: sticky; top: 51px; }
+  #sidebar-resizer:hover { background: var(--link); }
+  #collapse-btn { position: sticky; top: 64px; margin-left: -9px; width: 24px; height: 36px; border-radius: 8px;
+    background: var(--btn); color: var(--btn-text); border: 1px solid var(--border); cursor: pointer; z-index: 150; }
+  #sidebar-balloon { display: none; position: fixed; left: 0; top: 80px; z-index: 200; background: var(--surface-solid);
+    border: 1px solid var(--border); border-left: none; border-radius: 0 18px 18px 0; padding: 10px 14px; cursor: pointer; }
+  body.sidebar-collapsed #sidebar, body.sidebar-collapsed #sidebar-resizer { display: none; }
+  body.sidebar-collapsed #sidebar-balloon { display: block; }
+
+  main { flex: 1; padding: 20px 26px 60px; min-width: 0; }
+  .banner { background: var(--surface2); border: 1px dashed var(--border); border-radius: 8px; padding: 8px 12px;
+    margin-bottom: 14px; color: var(--text-muted); font-size: 0.85rem; }
+  .card { background: var(--surface); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 22px; margin-bottom: 20px; box-shadow: var(--shadow-card); }
+  .card h2 { margin: 0 0 12px; font-size: 1.05rem; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; }
+  .card .sub { color: var(--text-muted); font-size: 0.82rem; margin: -4px 0 12px; }
+  .panel { display: none; } .panel.active { display: block; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+  .field input, .field select { width: 100%; max-width: 420px; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text); }
+  .kv { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+  .kv code { background: var(--code-bg); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); }
+  .copy-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 0.8rem; }
+  .copy-btn:hover { border-color: var(--link); }
+
+  button { border-radius: 8px; padding: 6px 16px; cursor: pointer; font-weight: 600; border: 1px solid transparent; }
+  .btn { background: var(--btn); color: var(--btn-text); }
+  .btn-save { background: var(--btn-save); color: #fff; }
+  .btn-stop { background: var(--btn-stop); color: #fff; }
+  .btn-warn { background: var(--btn-warn); color: #fff; }
+  .toggle-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-light); }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-row .desc { flex: 1; font-size: 0.88rem; color: var(--text-muted); }
+  .toggle-row strong { display: block; margin-bottom: 2px; color: var(--text); }
+  .ok { color: var(--btn-save); } .warn { color: var(--btn-warn); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border-light); }
+  th { color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<header>
+  <h1>KeyLayerHUD 設定</h1>
+  <span class="mono" style="font-size:.8rem;color:var(--text-muted)">v0.1.0-mock</span>
+  <span class="spacer"></span>
+  <span class="hdr-group"><span class="lbl">文字</span>
+    <button class="hdr-btn" id="font-minus">−</button>
+    <button class="hdr-btn" id="font-plus">＋</button>
+  </span>
+  <button class="hdr-btn" id="theme-toggle" title="ライト／ダーク">🌙</button>
+</header>
+
+<div id="sidebar-balloon" title="メニューを開く">💬 メニュー</div>
+<div id="layout">
+  <nav id="sidebar">
+    <h3>設定</h3>
+    <button class="side-link active" data-panel="connection">🔌 接続</button>
+    <button class="side-link" data-panel="layout">⌨ レイアウト</button>
+    <button class="side-link" data-panel="keymap">🗂 キーマップ</button>
+    <button class="side-link" data-panel="hud">🪟 HUD</button>
+    <button class="side-link" data-panel="exit">⏻ 終了</button>
+  </nav>
+  <div id="sidebar-resizer"><button id="collapse-btn" title="折りたたみ">▼</button></div>
+
+  <main>
+    <div class="banner">設定ウィンドウ モック（cyber キット）。レイアウトは Corne 42 相当の<strong>ダミー</strong>です。</div>
+
+    <section class="panel active" id="panel-connection">
+      <div class="card">
+        <h2>接続</h2>
+        <p class="sub">VIA Raw HID（Usage Page <code>0xFF60</code>）経由。VIA/VIAL GUI と同時接続はできません。</p>
+        <div class="field">
+          <label>接続モード</label>
+          <select id="conn-mode">
+            <option value="mock" selected>Mock（開発用）</option>
+            <option value="via">VIA / VIAL（実機）</option>
+            <option value="off">切断</option>
+          </select>
+        </div>
+        <div class="kv"><span>VID</span><code id="vid">0x0000</code><button class="copy-btn" data-copy="0x0000">📋</button></div>
+        <div class="kv"><span>PID</span><code id="pid">0x0000</code><button class="copy-btn" data-copy="0x0000">📋</button></div>
+        <div class="kv"><span>Usage Page</span><code>0xFF60</code><button class="copy-btn" data-copy="0xFF60">📋</button></div>
+        <div class="kv"><span>Layer Report</span><code>0x42</code><button class="copy-btn" data-copy="0x42">📋</button></div>
+        <p class="warn" style="font-size:.85rem">実機到着後、VID/PID を設定に登録してください。</p>
+        <button class="btn" type="button">デバイスをスキャン</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-layout">
+      <div class="card">
+        <h2>レイアウトプロファイル</h2>
+        <p class="sub">物理キー配置の正本。キーマップとは別管理です。</p>
+        <div class="field">
+          <label>プロファイル</label>
+          <select>
+            <option selected>corne-42（3×6 + 3 thumb × 2）— サンプル</option>
+            <option disabled>lily58 — Phase B</option>
+            <option disabled>keyball — Phase B</option>
+          </select>
+        </div>
+        <table>
+          <tr><th>キー</th><th>Half</th><th>Row</th><th>Col</th></tr>
+          <tr><td>L0R0C0</td><td>left</td><td>0</td><td>0</td></tr>
+          <tr><td>L0R2C5</td><td>left</td><td>2</td><td>5</td></tr>
+          <tr><td>R0R0C0</td><td>right</td><td>0</td><td>0</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-keymap">
+      <div class="card">
+        <h2>キーマップ</h2>
+        <p class="sub">優先順位: ライブ VIA dump → インポート JSON → 同梱サンプル</p>
+        <div class="toggle-row">
+          <div><strong>サンプル keymap（同梱）</strong><span class="desc">keymaps/sample-via.json — 4 レイヤー</span></div>
+          <span class="ok">使用中</span>
+        </div>
+        <div class="toggle-row">
+          <div><strong>VIA バックアップ JSON</strong><span class="desc">.json をドラッグ＆ドロップで読み込み</span></div>
+          <button class="btn" type="button">ファイルを選択</button>
+        </div>
+        <div class="toggle-row">
+          <div><strong>ライブ dump</strong><span class="desc">接続中キーボードから 0x11 / 0x12 で取得</span></div>
+          <button class="btn" type="button" disabled>未接続</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-hud">
+      <div class="card">
+        <h2>HUD 表示</h2>
+        <div class="field"><label>グローバルホットキー（Overlay ↔ Edit）</label><input value="Ctrl+Shift+K" readonly></div>
+        <div class="field"><label>既定不透明度 (%)</label><input type="number" value="88" min="30" max="100"></div>
+        <div class="field"><label>Mock デモ（レイヤー自動切替）</label>
+          <select><option>3 秒周期</option><option>手動のみ</option></select>
+        </div>
+        <button class="btn-save" type="button">設定を保存</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-exit">
+      <div class="card">
+        <h2>終了</h2>
+        <p class="sub">HUD を閉じてもトレイ常駐します。完全終了はトレイまたはここから行います。</p>
+        <button class="btn-stop" type="button">KeyLayerHUD を終了</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const themeBtn = document.getElementById("theme-toggle");
+themeBtn.onclick = () => {
+  const light = document.documentElement.classList.toggle("light");
+  themeBtn.textContent = light ? "☀" : "🌙";
+};
+let fontSize = 14;
+document.getElementById("font-plus").onclick = () => { fontSize = Math.min(20, fontSize+1); document.documentElement.style.fontSize = fontSize+"px"; };
+document.getElementById("font-minus").onclick = () => { fontSize = Math.max(11, fontSize-1); document.documentElement.style.fontSize = fontSize+"px"; };
+
+document.querySelectorAll(".side-link").forEach(link => {
+  link.onclick = () => {
+    document.querySelectorAll(".side-link").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("panel-" + link.dataset.panel).classList.add("active");
+  };
+});
+
+document.querySelectorAll(".copy-btn").forEach(btn => {
+  btn.onclick = () => navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+    btn.textContent = "✓"; setTimeout(() => btn.textContent = "📋", 1200);
+  });
+});
+
+const sidebar = document.getElementById("sidebar");
+const resizer = document.getElementById("sidebar-resizer");
+let dragging = false;
+resizer.onmousedown = () => { dragging = true; resizer.classList.add("dragging"); };
+document.onmousemove = (e) => { if (!dragging) return; sidebar.style.width = Math.min(420, Math.max(160, e.clientX - sidebar.getBoundingClientRect().left)) + "px"; };
+document.onmouseup = () => { dragging = false; resizer.classList.remove("dragging"); };
+document.getElementById("collapse-btn").onclick = () => document.body.classList.add("sidebar-collapsed");
+document.getElementById("sidebar-balloon").onclick = () => document.body.classList.remove("sidebar-collapsed");
+</script>
+</body>
+</html>

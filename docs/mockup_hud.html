@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeyLayerHUD — HUD オーバーレイ モック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: transparent;
+    --surface: rgba(30, 41, 59, 0.55);
+    --surface-solid: rgba(30, 41, 59, 0.85);
+    --border: rgba(0, 212, 255, 0.35);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --link: #00d4ff;
+    --purple: #8b5cf6;
+    --btn: #0ea5c6;
+    --btn-save: #10b981;
+    --btn-warn: #e3892b;
+    --key-bg: rgba(10, 14, 39, 0.72);
+    --key-active: rgba(0, 212, 255, 0.22);
+    --glow: 0 0 20px rgba(0, 212, 255, 0.35);
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100vh; background: #1a1f35;
+    background-image: radial-gradient(circle at 30% 20%, rgba(0,212,255,.08), transparent 40%),
+      radial-gradient(circle at 70% 80%, rgba(139,92,246,.08), transparent 45%);
+    font-family: Inter, "Yu Gothic UI", Meiryo, sans-serif; color: var(--text); }
+  .demo-bg-note { position: fixed; top: 12px; left: 12px; font-size: 0.8rem; color: var(--text-muted);
+    background: rgba(10,14,39,.8); padding: 6px 10px; border-radius: 8px; border: 1px dashed var(--border); z-index: 0; }
+
+  .hud-root { position: relative; z-index: 1; padding: 24px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+  .hud-panel { background: var(--surface); backdrop-filter: blur(14px); border: 1px solid var(--border);
+    border-radius: 18px; box-shadow: var(--shadow-card), var(--glow); padding: 14px 16px 18px;
+    transition: opacity 0.2s ease, transform 0.2s ease; }
+  .hud-panel.edit-mode { outline: 2px dashed var(--btn-warn); cursor: move; }
+  .hud-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .hud-title { font-weight: 800; font-size: 0.95rem; margin: 0;
+    background: linear-gradient(135deg, var(--link), var(--purple));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .status-pill { font-size: 0.75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); }
+  .status-pill.mock { color: var(--btn-warn); border-color: var(--btn-warn); }
+  .status-pill.live { color: var(--btn-save); border-color: var(--btn-save); }
+  .layer-badge { font-family: "JetBrains Mono", monospace; font-size: 0.8rem; padding: 3px 10px;
+    border-radius: 8px; background: rgba(0,212,255,.12); border: 1px solid var(--link); color: var(--link); }
+  .mode-toggle { margin-left: auto; display: flex; gap: 6px; }
+  .hdr-btn { background: rgba(10,14,39,.6); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; min-width: 34px; height: 30px; cursor: pointer; font-size: 0.85rem; padding: 0 10px; }
+  .hdr-btn:hover { border-color: var(--link); box-shadow: var(--glow); }
+  .hdr-btn.active { background: rgba(0,212,255,.15); color: var(--link); }
+
+  .edit-bar { display: none; gap: 12px; align-items: center; margin-bottom: 12px; padding: 8px 10px;
+    background: rgba(227,137,43,.12); border: 1px solid var(--btn-warn); border-radius: 10px; font-size: 0.82rem; }
+  .hud-panel.edit-mode .edit-bar { display: flex; }
+  .edit-bar input[type=range] { flex: 1; max-width: 180px; accent-color: var(--link); }
+  .edit-bar label { color: var(--text-muted); white-space: nowrap; }
+
+  .keyboard-wrap { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; }
+  .half { display: flex; flex-direction: column; gap: 6px; }
+  .half-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: center; margin-bottom: 2px; }
+  .row { display: flex; gap: 5px; justify-content: center; }
+  .thumb-row { margin-top: 4px; gap: 8px; }
+  .key { width: 42px; height: 42px; border-radius: 8px; background: var(--key-bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-family: "JetBrains Mono", monospace;
+    font-size: 0.62rem; text-align: center; line-height: 1.1; padding: 2px; transition: all 0.15s ease; }
+  .key.thumb { width: 38px; height: 38px; }
+  .key.layer-active { background: var(--key-active); border-color: var(--link); box-shadow: inset 0 0 12px rgba(0,212,255,.25); }
+  .key.momentary { opacity: 0.55; font-style: italic; }
+
+  .layer-tabs { display: flex; gap: 6px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+  .layer-tab { font-size: 0.78rem; padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted); cursor: pointer; }
+  .layer-tab.active { color: var(--link); border-color: var(--link); background: rgba(0,212,255,.1); }
+
+  .pin-indicator { font-size: 0.75rem; color: var(--text-muted); }
+  .pin-indicator.on { color: var(--btn-save); }
+</style>
+</head>
+<body>
+<p class="demo-bg-note">モック用背景（本番 HUD は透明ウィンドウ）。Corne 42 相当・ダミーキーマップ。</p>
+
+<div class="hud-root">
+  <div class="hud-panel" id="hud-panel" style="opacity: 0.88; transform: scale(1);">
+    <div class="hud-top">
+      <h1 class="hud-title">KeyLayer HUD</h1>
+      <span class="status-pill mock" id="conn-pill">Mock</span>
+      <span class="layer-badge" id="layer-badge">Layer 1 · Nav</span>
+      <span class="pin-indicator" id="pin-ind">📌 未固定</span>
+      <div class="mode-toggle">
+        <button class="hdr-btn active" id="btn-overlay" type="button">Overlay</button>
+        <button class="hdr-btn" id="btn-edit" type="button">Edit</button>
+      </div>
+    </div>
+
+    <div class="edit-bar">
+      <label>不透明度 <input type="range" id="opacity" min="30" max="100" value="88"></label>
+      <label>スケール <input type="range" id="scale" min="70" max="130" value="100"></label>
+      <button class="hdr-btn" id="btn-pin" type="button">📌 固定</button>
+      <span class="pin-indicator">ドラッグで移動 · Ctrl+Shift+K で切替</span>
+    </div>
+
+    <div class="keyboard-wrap" id="keyboard"></div>
+
+    <div class="layer-tabs" id="layer-tabs"></div>
+  </div>
+</div>
+
+<script>
+const LAYERS = [
+  { id: 0, name: "Base", keys: [
+    ["Tab","Q","W","E","R","T"],["A","S","D","F","G"],["Z","X","C","V","B"],
+    ["Esc","LGui","LAlt","Spc"],["Bspc","RAlt","MO1","Ent"]
+  ]},
+  { id: 1, name: "Nav", keys: [
+    ["`","1","2","3","4","5"],["←","↓","↑","→","PgUp"],["Home","End","Ins","Del","PgDn"],
+    ["","" ,"" ,"" ],["","" ,"MO2",""]
+  ]},
+  { id: 2, name: "Sym", keys: [
+    ["!","@","#","$","%","^"],["&","*","(",")","_"],["+","-","=","[","]"],
+    ["","" ,"" ,"" ],["","" ,"MO3",""]
+  ]},
+  { id: 3, name: "Fn", keys: [
+    ["F1","F2","F3","F4","F5","F6"],["F7","F8","F9","F10","F11"],["F12","Vol-","Vol+","Mute","Play"],
+    ["","" ,"" ,"" ],["","" ,"" ,"" ]
+  ]}
+];
+
+let currentLayer = 1;
+let editMode = false;
+let pinned = false;
+
+function renderKeyboard() {
+  const layer = LAYERS[currentLayer];
+  const kb = document.getElementById("keyboard");
+  const leftRows = layer.keys.slice(0, 3);
+  const leftThumbs = layer.keys[3];
+  const rightThumbs = layer.keys[4];
+  const rightRows = leftRows.map(row => [...row].reverse());
+
+  function halfHTML(label, rows, thumbs, mirror) {
+    const rowHtml = rows.map((row, ri) =>
+      `<div class="row">${row.map((k, ci) => {
+        const cls = k.startsWith("MO") ? "key momentary layer-active" : "key layer-active";
+        return `<div class="${k ? cls : "key"}" title="L${layer.id} R${ri} C${ci}">${k || "·"}</div>`;
+      }).join("")}</div>`
+    ).join("");
+    const thumbHtml = `<div class="row thumb-row">${thumbs.map(k =>
+      `<div class="key thumb layer-active">${k || "·"}</div>`).join("")}</div>`;
+    return `<div class="half"><div class="half-label">${label}</div>${rowHtml}${thumbHtml}</div>`;
+  }
+
+  kb.innerHTML = halfHTML("Left", leftRows, leftThumbs) + halfHTML("Right", rightRows, rightThumbs);
+  document.getElementById("layer-badge").textContent = `Layer ${layer.id} · ${layer.name}`;
+  document.querySelectorAll(".layer-tab").forEach((btn, i) => btn.classList.toggle("active", i === currentLayer));
+}
+
+function renderTabs() {
+  const tabs = document.getElementById("layer-tabs");
+  tabs.innerHTML = LAYERS.map((l, i) =>
+    `<button type="button" class="layer-tab${i === currentLayer ? " active" : ""}" data-layer="${i}">L${l.id} ${l.name}</button>`
+  ).join("");
+  tabs.querySelectorAll(".layer-tab").forEach(btn => {
+    btn.onclick = () => { currentLayer = +btn.dataset.layer; renderKeyboard(); };
+  });
+}
+
+const panel = document.getElementById("hud-panel");
+document.getElementById("btn-overlay").onclick = () => {
+  editMode = false;
+  panel.classList.remove("edit-mode");
+  document.getElementById("btn-overlay").classList.add("active");
+  document.getElementById("btn-edit").classList.remove("active");
+};
+document.getElementById("btn-edit").onclick = () => {
+  editMode = true;
+  panel.classList.add("edit-mode");
+  document.getElementById("btn-edit").classList.add("active");
+  document.getElementById("btn-overlay").classList.remove("active");
+};
+document.getElementById("opacity").oninput = (e) => {
+  panel.style.opacity = (e.target.value / 100).toFixed(2);
+};
+document.getElementById("scale").oninput = (e) => {
+  panel.style.transform = `scale(${e.target.value / 100})`;
+};
+document.getElementById("btn-pin").onclick = () => {
+  pinned = !pinned;
+  document.getElementById("pin-ind").textContent = pinned ? "📌 固定中" : "📌 未固定";
+  document.getElementById("pin-ind").classList.toggle("on", pinned);
+};
+
+renderTabs();
+renderKeyboard();
+setInterval(() => {
+  if (!editMode) {
+    currentLayer = (currentLayer + 1) % LAYERS.length;
+    renderKeyboard();
+  }
+}, 3000);
+</script>
+</body>
+</html>

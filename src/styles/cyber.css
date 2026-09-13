@@ -1,0 +1,73 @@
+:root {
+  --bg: #0a0e27;
+  --surface: rgba(30, 41, 59, 0.6);
+  --surface-solid: #1e293b;
+  --surface2: rgba(10, 14, 39, 0.6);
+  --border: rgba(100, 116, 139, 0.3);
+  --border-light: rgba(100, 116, 139, 0.18);
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --link: #00d4ff;
+  --purple: #8b5cf6;
+  --btn: #0ea5c6;
+  --btn-text: #06121f;
+  --btn-save: #10b981;
+  --btn-stop: #ff0055;
+  --btn-warn: #e3892b;
+  --code-bg: rgba(10, 14, 39, 0.7);
+  --grid-line: rgba(0, 212, 255, 0.05);
+  --glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --key-bg: rgba(10, 14, 39, 0.72);
+  --key-active: rgba(0, 212, 255, 0.22);
+  color-scheme: dark;
+}
+:root.light {
+  --bg: #eef2f7;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --surface2: rgba(226, 232, 240, 0.7);
+  --border: rgba(100, 116, 139, 0.35);
+  --text: #0f172a;
+  --text-muted: #5a6472;
+  --link: #0284c7;
+  --purple: #7c3aed;
+  --btn: #38bdf8;
+  --btn-text: #082f3f;
+  --code-bg: #eef1f4;
+  --grid-line: rgba(2, 132, 199, 0.06);
+  --glow: 0 0 16px rgba(2, 132, 199, 0.25);
+  --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --key-bg: rgba(255, 255, 255, 0.85);
+  --key-active: rgba(2, 132, 199, 0.15);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { font-size: 14px; }
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: Inter, "Yu Gothic UI", Meiryo, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+code, .mono {
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+.hdr-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 34px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0 10px;
+}
+.hdr-btn:hover { border-color: var(--link); box-shadow: var(--glow); }
+.hdr-btn.active { background: rgba(0, 212, 255, 0.15); color: var(--link); }
+.btn { background: var(--btn); color: var(--btn-text); border: 1px solid var(--btn); border-radius: 8px; padding: 6px 16px; cursor: pointer; font-weight: 600; }
+.btn-save { background: var(--btn-save); color: #fff; border-color: var(--btn-save); }
+.btn-stop { background: var(--btn-stop); color: #fff; border-color: var(--btn-stop); }
+.copy-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 0.8rem; }

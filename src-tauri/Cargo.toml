@@ -1,0 +1,31 @@
+[package]
+name = "keylayer-hud"
+version = "0.1.0"
+description = "Split keyboard layer HUD overlay for QMK VIA/VIAL"
+authors = ["Hide-Infa"]
+edition = "2021"
+
+[lib]
+name = "keylayer_hud_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-global-shortcut = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+dirs = "5"
+parking_lot = "0.12"
+hidapi = "2.6"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
