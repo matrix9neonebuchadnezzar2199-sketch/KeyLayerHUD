@@ -33,7 +33,8 @@
 |------|------------|
 | 利用者 | [インストール](#インストール) → [使用例](#使用例) |
 | ファーム改修者 | [firmware/qmk/README.md](firmware/qmk/README.md) |
-| 開発者 | [TEST.py](TEST.py) → [docs/adr/](docs/adr/) |
+| 他端末・実装 | [docs/設計書.md](docs/設計書.md) → [docs/設計図.md](docs/設計図.md) → [docs/adr/](docs/adr/) |
+| 検証 | [TEST.py](TEST.py) |
 
 ## 動作環境
 
